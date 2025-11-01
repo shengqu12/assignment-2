@@ -1,3 +1,10 @@
+# url:https://github.com/shengqu12/assignment-2/blob/main/assignmentmap.html
+
+# adding features: 
+function of drawing, measuring, fullscreen
+adding icons of pittsburgh and cmu
+when you click there will be the longitude and altitude of the location
+
 # Excel to Folium Map Generator
 
 A Python script that parses an Excel spreadsheet with multiple tabs containing different types of map data and creates an interactive Folium map.
@@ -184,3 +191,4 @@ The script generates an interactive HTML map with:
 ## Example Data
 
 See `sample_map_data.xlsx` for a complete example with all sheet types populated.
+
