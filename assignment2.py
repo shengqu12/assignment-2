@@ -17,6 +17,7 @@ import pandas as pd
 import folium
 from folium.plugins import HeatMap, MarkerCluster
 import json
+import folium.plugins
 
 
 def parse_coordinate_string(coord_str):
@@ -76,7 +77,23 @@ def add_markers(map_obj, df_markers, use_cluster=True):
 
 
 def add_lines(map_obj, df_lines):
-    pass
+     if df_lines is None or df_lines.empty:
+        return
+
+     for _, row in df_lines.iterrows():
+        coordinates = parse_coordinate_string(row.get('coordinates'))
+        if coordinates:
+            folium.Polygon(
+                locations=coordinates,
+                popup=row.get('name', 'Area'),
+                tooltip=row.get('name', 'Area'),
+                color=row.get('color', 'blue'),
+                fill=True,
+                fill_color=row.get('fill_color', row.get('color', 'lightblue')),
+                fill_opacity=row.get('fill_opacity', 0.4),
+                weight=row.get('weight', 2)
+            ).add_to(map_obj)
+    
 
 
 def add_polygons(map_obj, df_polygons):
@@ -167,6 +184,7 @@ def create_map_from_excel(excel_file, output_file='map.html',
     df_polygons = excel_data.get('polygons')
     df_heatmap = excel_data.get('heatmap')
     df_circles = excel_data.get('circles')
+    df_lines=excel_data.get('lines')
 
     # Calculate map center if not provided
     if center_lat is None or center_lon is None:
@@ -210,8 +228,32 @@ def create_map_from_excel(excel_file, output_file='map.html',
     print("Adding heatmap...")
     add_heatmap(m, df_heatmap)
 
+    print('Adding lines')
+    add_lines(m,df_lines)
+
     # Add layer control
     folium.LayerControl().add_to(m)
+    
+    # Add marker of pittsburgh
+    folium.Marker(location=[40.4406,-79.9959],popup='pittsburgh',icon=folium.Icon(color='blue',icon='home')).add_to(m)
+    
+    #add marker of cmu
+    folium.Marker(location=[40.443336,-79.944023],popup='carnegie mellon university',icon=folium.CustomIcon(icon_image='https://www.cmu.edu/brand/brand-guidelines/images/seal-4c-600x600-min.jpg',icon_size=(35,35))).add_to(m)
+
+    #add draw function to the pages
+    folium_draw=folium.plugins.Draw()
+    folium_draw.add_to(m)
+    
+    #add a minimap
+    plugin_minimap=folium.plugins.MiniMap(toggle_display=True,position="bottomleft")
+    plugin_minimap.add_to(m)
+
+    plugin_laton=folium.LatLngPopup()
+    m.add_child(plugin_laton)
+
+    plugin_fullscreen=folium.plugins.Fullscreen(position='bottomright',title='Expand Me',title_cancel='Exit',force_separate_button=True)
+    plugin_fullscreen.add_to(m)
+
 
     # Save map
     m.save(output_file)
